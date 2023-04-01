@@ -464,7 +464,12 @@ public:
 	 */
 	virtual float estimate(const board& b) const {
 		// TODO
-
+		float value = 0;
+		for(int i=0; i < iso_last; i++){
+			size_t index = indexof(isomorphic[i], b);
+			value += operator[](index);
+		}
+		return value;
 	}
 
 	/**
@@ -472,7 +477,14 @@ public:
 	 */
 	virtual float update(const board& b, float u) {
 		// TODO
-
+		float avg_u = u / iso_last;
+		float ret = 0;
+		for(int i = 0; i< iso_last; i++){
+			size_t index = indexof(isomorphic[i], b);
+			operator[](index) += avg_u;
+			ret += operator[](index);
+		}
+		return ret;
 	}
 
 	/**
@@ -510,6 +522,11 @@ protected:
 
 	size_t indexof(const std::vector<int>& patt, const board& b) const {
 		// TODO
+		size_t index = 0;
+		for(int i = 0; i < patt.size(); i++){
+			index |= b.at(patt[i]) << (4 * i);
+		}
+		return index;
 	}
 
 	std::string nameof(const std::vector<int>& patt) const {
