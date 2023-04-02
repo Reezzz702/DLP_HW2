@@ -698,7 +698,22 @@ public:
 		for (state* move = after; move != after + 4; move++) {
 			if (move->assign(b)) {
 				// TODO
-
+				board after_state = move->after_state();
+				float value_sum = 0;
+				int num = 0;
+				for (int i = 0; i < 16; i++){
+					if (after_state.at(i) == 0) {
+						// 90% popup 2
+						after_state.set(i, 1);
+						value_sum += 0.9 * estimate(after_state);
+						// 10% popup 4
+						after_state.set(i, 2);
+						value_sum += 0.1 * estimate(after_state);
+						after_state.set(i, 0);
+						num++;
+					}
+				}
+				move->set_value(move->reward() + value_sum / num);
 				if (move->value() > best->value())
 					best = move;
 			} else {
@@ -725,7 +740,13 @@ public:
 	 */
 	void update_episode(std::vector<state>& path, float alpha = 0.1) const {
 		// TODO
-
+		float value = 0;
+		for (path.pop_back(); path.size(); path.pop_back()){
+			state &move = path.back();
+			float error = value - (move.value() - move.reward());
+			debug << "update error = " << error << "for after state" << std::endl <<move.after_state();
+			value = move.reward() + update(move.before_state(), alpha * error);
+		}
 	}
 
 	/**
@@ -895,7 +916,7 @@ int main(int argc, const char* argv[]) {
 	}
 
 	// store the model into file
-	tdl.save("");
+	tdl.save("weights.bin");
 
 	return 0;
 }
